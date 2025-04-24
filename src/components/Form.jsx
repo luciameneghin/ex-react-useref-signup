@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState } from 'react';
 
 const Form = () => {
   const [formData, setFormData] = useState({
@@ -11,7 +11,62 @@ const Form = () => {
   });
 
   const [errors, setErrors] = useState({});
-  const [message, setMessage] = useState('');
+  const [valid, setValid] = useState({
+    username: '',
+    password: '',
+    devDescription: ''
+  });
+
+  const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const numbers = "0123456789";
+  const symbols = "!@#$%^&*()-_=+[]{}|;:'\",.<>?/`~";
+
+  const validUsername = (username) => {
+    const validLength = username.length >= 6 && username.length <= 15;
+    const isAlphanumeric = [...username].some(c => letters.includes(c)) &&
+      [...username].some(c => numbers.includes(c)) &&
+      [...username].some(c => symbols.includes(c));
+
+    if (!username.trim()) {
+      return { error: 'Lo username è obbligatorio' };
+    }
+    if (!validLength) {
+      return { error: 'Lo username deve essere lungo tra 6 e 15 caratteri' };
+    }
+    if (!isAlphanumeric) {
+      return { error: 'Lo username deve contenere almeno una lettera, un numero e un simbolo' };
+    }
+    return { valid: 'Username valido' };
+  };
+
+  const validPassword = (password) => {
+    const hasLetter = [...password].some(letter => letters.includes(letter));
+    const hasNumber = [...password].some(number => numbers.includes(number));
+    const hasSymbol = [...password].some(symbol => symbols.includes(symbol));
+    const validLength = password.length >= 8;
+
+    if (!validLength) {
+      return { error: 'La password deve essere lunga almeno 8 caratteri' };
+    }
+    if (!hasLetter || !hasNumber || !hasSymbol) {
+      return { error: 'La password deve contenere almeno una lettera, un numero e un simbolo' };
+    }
+    return { valid: 'Password valida' };
+  };
+
+  const validDescription = (description) => {
+    if (!description.trim()) {
+      return { error: 'La descrizione è obbligatoria' };
+    }
+    const length = description.trim().length;
+    if (length < 100) {
+      return { error: 'La descrizione deve essere lunga almeno 100 caratteri' };
+    }
+    if (length > 500) {
+      return { error: 'La descrizione deve essere lunga massimo 500 caratteri' };
+    }
+    return { valid: 'Descrizione valida' };
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -19,7 +74,25 @@ const Form = () => {
       ...prevData,
       [name]: value
     }));
-  }
+
+    // Esegui la validazione in tempo reale
+    if (name === 'username') {
+      setValid((prevValid) => ({
+        ...prevValid,
+        username: validUsername(value)
+      }));
+    } else if (name === 'password') {
+      setValid((prevValid) => ({
+        ...prevValid,
+        password: validPassword(value)
+      }));
+    } else if (name === 'devDescription') {
+      setValid((prevValid) => ({
+        ...prevValid,
+        devDescription: validDescription(value)
+      }));
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -49,59 +122,63 @@ const Form = () => {
 
     if (Object.keys(newErrors).length === 0) {
       console.log('Form:', formData);
-      setMessage('Form compilato con successo!');
-    } else {
-      setMessage('');
     }
-  }
-
+  };
 
   return (
     <form onSubmit={handleSubmit} className='form-control'>
+      {/* Nome */}
       <section>
         <label htmlFor="name"><strong>Inserisci nome e cognome:</strong></label>
         <input
           type="text"
-          name='name'
+          name="name"
           value={formData.name}
           onChange={handleChange}
-          placeholder='Nome e Cognome'
-          className='form-control'
+          placeholder="Nome e Cognome"
+          className="form-control"
         />
         {errors.name && <p className="text-danger">{errors.name}</p>}
       </section>
+
+      {/* Username */}
       <section>
         <label htmlFor="username"><strong>Inserisci il tuo username:</strong></label>
         <input
           type="text"
-          name='username'
+          name="username"
           value={formData.username}
           onChange={handleChange}
-          placeholder='Inserisci il tuo username'
-          className='form-control'
+          placeholder="Inserisci il tuo username"
+          className="form-control"
         />
-        {errors.username && <p className="text-danger">{errors.username}</p>}
+        {valid.username && valid.username.error && <p className="text-danger">{valid.username.error}</p>}
+        {valid.username && valid.username.valid && <p className="text-success">{valid.username.valid}</p>}
       </section>
+
+      {/* Password */}
       <section>
         <label htmlFor="password"><strong>Inserisci la password:</strong></label>
         <input
           type="password"
-          name='password'
+          name="password"
           value={formData.password}
           onChange={handleChange}
-          placeholder='Inserisci la password'
-          className='form-control'
+          placeholder="Inserisci la password"
+          className="form-control"
         />
-        {errors.password && <p className="text-danger">{errors.password}</p>}
+        {valid.password && valid.password.error && <p className="text-danger">{valid.password.error}</p>}
+        {valid.password && valid.password.valid && <p className="text-success">{valid.password.valid}</p>}
       </section>
+
+      {/* Specializzazione */}
       <section>
         <label htmlFor="devSpecialization"><strong>Seleziona la tua specializzazione:</strong></label>
         <select
-          name='devSpecialization'
+          name="devSpecialization"
           value={formData.devSpecialization}
           onChange={handleChange}
-          placeholder='Scegli la tua specializzazione'
-          className='form-select'
+          className="form-select"
         >
           <option value="">-- Seleziona specializzazione --</option>
           <option value="frontend">Frontend</option>
@@ -110,36 +187,40 @@ const Form = () => {
         </select>
         {errors.devSpecialization && <p className="text-danger">{errors.devSpecialization}</p>}
       </section>
+
+      {/* Esperienza */}
       <section>
         <label htmlFor="devExperience"><strong>Inserisci gli anni di esperienza:</strong></label>
         <input
-          name='devExperience'
           type="number"
-          min={0}
+          name="devExperience"
           value={formData.devExperience}
           onChange={handleChange}
-          placeholder='Inserisci gli anni di esperienza'
-          className='form-control'
+          placeholder="Inserisci gli anni di esperienza"
+          className="form-control"
         />
         {errors.devExperience && <p className="text-danger">{errors.devExperience}</p>}
       </section>
+
+      {/* Descrizione */}
       <section>
         <label htmlFor="devDescription"><strong>Inserisci una breve descrizione di te:</strong></label>
         <textarea
-          name='devDescription'
+          name="devDescription"
           value={formData.devDescription}
           onChange={handleChange}
-          placeholder='Inserisci una breve descrizione di te'
-          className='form-control'
+          placeholder="Inserisci una breve descrizione di te"
+          className="form-control"
         />
-        {errors.devDescription && <p className="text-danger">{errors.devDescription}</p>}
+        {valid.devDescription && valid.devDescription.error && <p className="text-danger">{valid.devDescription.error}</p>}
+        {valid.devDescription && valid.devDescription.valid && <p className="text-success">{valid.devDescription.valid}</p>}
       </section>
-      <div className='text-center mb-4'>
-        <button type='submit' className='btn btn-primary w-25' onClick={handleSubmit}>Invia</button>
-        <p className="text-success mt-2">{message}</p>
+
+      <div className="text-center mb-4">
+        <button type="submit" className="btn btn-primary w-25">Invia</button>
       </div>
     </form>
-  )
-}
+  );
+};
 
-export default Form
+export default Form;
