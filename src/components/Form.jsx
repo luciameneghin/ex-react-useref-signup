@@ -10,6 +10,9 @@ const Form = () => {
     devDescription: ''
   });
 
+  const [errors, setErrors] = useState({});
+  const [message, setMessage] = useState('');
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
@@ -20,16 +23,36 @@ const Form = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const { name, username, password, devSpecialization, devExperience, devDescription } = formData;
-    if (!name || !username || !password || !devSpecialization || !devExperience || !devDescription) {
-      alert('Per favore compila tutti i campi');
-      return;
+
+    const newErrors = {};
+
+    if (!formData.name.trim()) {
+      newErrors.name = "Compila il campo con il tuo nome e cognome";
     }
-    if (devExperience < 0) {
-      alert('L\'esperienza non può essere negativa');
-      return;
+    if (!formData.username.trim()) {
+      newErrors.username = "Compila il campo con il tuo username";
     }
-    console.log('Form:', formData);
+    if (!formData.password.trim()) {
+      newErrors.password = "Compila il campo con la password";
+    }
+    if (!formData.devSpecialization) {
+      newErrors.devSpecialization = "Seleziona una specializzazione";
+    }
+    if (!formData.devExperience) {
+      newErrors.devExperience = "Compila il campo con gli anni di esperienza";
+    }
+    if (!formData.devDescription.trim()) {
+      newErrors.devDescription = "Compila il campo con una breve descrizione di te";
+    }
+
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length === 0) {
+      console.log('Form:', formData);
+      setMessage('Form compilato con successo!');
+    } else {
+      setMessage('');
+    }
   }
 
 
@@ -45,6 +68,7 @@ const Form = () => {
           placeholder='Nome e Cognome'
           className='form-control'
         />
+        {errors.name && <p className="text-danger">{errors.name}</p>}
       </section>
       <section>
         <label htmlFor="username"><strong>Inserisci il tuo username:</strong></label>
@@ -56,6 +80,7 @@ const Form = () => {
           placeholder='Inserisci il tuo username'
           className='form-control'
         />
+        {errors.username && <p className="text-danger">{errors.username}</p>}
       </section>
       <section>
         <label htmlFor="password"><strong>Inserisci la password:</strong></label>
@@ -67,6 +92,7 @@ const Form = () => {
           placeholder='Inserisci la password'
           className='form-control'
         />
+        {errors.password && <p className="text-danger">{errors.password}</p>}
       </section>
       <section>
         <label htmlFor="devSpecialization"><strong>Seleziona la tua specializzazione:</strong></label>
@@ -82,17 +108,20 @@ const Form = () => {
           <option value="backend">Backend</option>
           <option value="fullstack">Fullstack</option>
         </select>
+        {errors.devSpecialization && <p className="text-danger">{errors.devSpecialization}</p>}
       </section>
       <section>
         <label htmlFor="devExperience"><strong>Inserisci gli anni di esperienza:</strong></label>
         <input
           name='devExperience'
           type="number"
+          min={0}
           value={formData.devExperience}
           onChange={handleChange}
           placeholder='Inserisci gli anni di esperienza'
           className='form-control'
         />
+        {errors.devExperience && <p className="text-danger">{errors.devExperience}</p>}
       </section>
       <section>
         <label htmlFor="devDescription"><strong>Inserisci una breve descrizione di te:</strong></label>
@@ -103,9 +132,11 @@ const Form = () => {
           placeholder='Inserisci una breve descrizione di te'
           className='form-control'
         />
+        {errors.devDescription && <p className="text-danger">{errors.devDescription}</p>}
       </section>
       <div className='text-center mb-4'>
-        <button type='submit' className='btn btn-primary w-25'>Invia</button>
+        <button type='submit' className='btn btn-primary w-25' onClick={handleSubmit}>Invia</button>
+        <p className="text-success mt-2">{message}</p>
       </div>
     </form>
   )
